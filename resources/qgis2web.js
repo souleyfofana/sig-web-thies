@@ -479,6 +479,9 @@ map.on('singleclick', onSingleClickWMS);
 	
 	const geolocation = new ol.Geolocation({
 	  projection: map.getView().getProjection(),
+      trackingOptions: {
+        enableHighAccuracy: true
+      }
 	});
 
 	geolocation.on('change:accuracyGeometry', function () {
