@@ -117,6 +117,8 @@
             <div class="project-title">SIG Thiès</div>
             <div id="navbar">
                 <button class="nav-btn" onclick="location.reload()"><i class="fa fa-home"></i> Accueil</button>
+                <button class="nav-btn" onclick="toggleLayersPanel()"><i class="fa fa-layer-group"></i> Données</button>
+                <button class="nav-btn" onclick="toggleLegendPanel()"><i class="fa fa-list"></i> Légende</button>
                 <button class="nav-btn" onclick="toggleModal('aboutModal')"><i class="fa fa-info-circle"></i> A propos</button>
                 <button class="nav-btn" onclick="activateSpatialQuery()"><i class="fa fa-vector-square"></i> Requête Spatiale</button>
                 <button class="nav-btn" onclick="activateAttributeQuery()"><i class="fa fa-search"></i> Requête Attributaire</button>
@@ -132,6 +134,7 @@
             <div id="left-panel" class="sidebar">
                 <div class="panel-header">
                     <span class="panel-title">Catalogue des données</span>
+                    <button class="close-panel-btn" onclick="toggleLayersPanel()"><i class="fa fa-times"></i></button>
                 </div>
                 <div id="left-panel-content" class="panel-content"></div>
             </div>
@@ -146,6 +149,7 @@
             <div id="right-panel" class="sidebar">
                 <div class="panel-header">
                     <span class="panel-title">Fonds de carte & Légende</span>
+                    <button class="close-panel-btn" onclick="toggleLegendPanel()"><i class="fa fa-times"></i></button>
                 </div>
                 <div id="right-panel-content" class="panel-content">
                     <h4>Légende</h4>
@@ -236,8 +240,26 @@
                 }
             });
 
-            // Mobile Sidebar Toggle Logic (Optional enhancement)
-            // You can add buttons to toggle classes 'visible' on sidebars for mobile view if needed.
+            // Mobile & Desktop Sidebar Toggle Logic
+            function toggleLayersPanel() {
+                var panel = document.getElementById('left-panel');
+                if (window.innerWidth <= 768) {
+                    panel.classList.toggle('visible');
+                    document.getElementById('right-panel').classList.remove('visible'); // Close other panel
+                } else {
+                    panel.classList.toggle('collapsed');
+                }
+            }
+
+            function toggleLegendPanel() {
+                var panel = document.getElementById('right-panel');
+                if (window.innerWidth <= 768) {
+                    panel.classList.toggle('visible');
+                    document.getElementById('left-panel').classList.remove('visible'); // Close other panel
+                } else {
+                    panel.classList.toggle('collapsed');
+                }
+            }
         </script>
     </body>
 </html>
