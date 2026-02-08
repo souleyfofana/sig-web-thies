@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
+        <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
+        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        <style>
+        body { margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Header & Navbar */
+        header { background-color: #005a8d; color: white; padding: 0 15px; display: flex; align-items: center; height: 55px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
+        .project-title { margin: 0; font-size: 1.2rem; font-weight: 600; margin-right: 30px; white-space: nowrap; }
+        #navbar { display: flex; gap: 5px; flex-grow: 1; align-items: center; overflow-x: auto; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: none; color: white; cursor: pointer; padding: 8px 12px; font-size: 0.9rem; border-radius: 4px; transition: background 0.2s; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .nav-btn:hover { background-color: rgba(255,255,255,0.2); }
+        .nav-btn i { font-size: 1rem; }
+        
+        /* Main Layout */
+        #content-wrapper { display: flex; flex-grow: 1; position: relative; overflow: hidden; }
+        
+        .sidebar { width: 300px; background-color: #f8f9fa; border-right: 1px solid #ddd; border-left: 1px solid #ddd; display: flex; flex-direction: column; transition: margin 0.3s ease; flex-shrink: 0; z-index: 5; position: relative; }
+        #left-panel { border-right: 1px solid #ccc; border-left: none; }
+        #right-panel { border-left: 1px solid #ccc; border-right: none; }
+        
+        .sidebar.collapsed { margin-left: -300px; }
+        #right-panel.collapsed { margin-right: -300px; }
+        
+        .panel-header { padding: 10px 15px; background-color: #005a8d; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { margin: 0; font-size: 1rem; }
+        .close-panel-btn { background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; }
+        
+        .panel-content { flex-grow: 1; overflow-y: auto; padding: 15px; }
+        
+        #map { flex-grow: 1; position: relative; background-color: #eef2f3; }
+        
+        /* Footer */
+        footer { background-color: #005a8d; color: white; height: 30px; display: flex; align-items: center; padding: 0 15px; font-size: 0.85rem; justify-content: space-between; flex-shrink: 0; z-index: 10; }
+        .footer-info { display: flex; gap: 20px; align-items: center; }
+        
+        /* Customizing OL controls */
+        .ol-overviewmap { bottom: 40px; right: 10px; top: auto; left: auto; border: 2px solid #005a8d; }
+        .ol-overviewmap button { background-color: #005a8d; }
+        .ol-scale-line { position: static; background: none; padding: 0; }
+        .ol-scale-line-inner { border: 1px solid white; border-top: none; color: white; }
+        
+        /* Search in Navbar */
+        .photon-geocoder-autocomplete { position: static !important; margin: 0 !important; }
+        .photon-input { border: none; padding: 8px; border-radius: 4px; width: 200px; }
+        
+        /* Modal for attributes/about */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-modal:hover { color: black; }
+        
+        /* Legend styles */
+        .legend-item { margin-bottom: 10px; display: block; font-weight: bold; font-size: 1.1em; }
+        .legend-item img { vertical-align: middle; margin-left: 5px; }
+        
+        /* Basemap switcher styles */
+        .basemap-option { margin-bottom: 5px; }
+        </style>
+
+        <title>Cartographie web de la région de Thiès</title>
+    </head>
+    <body>
+        <header>
+            <div class="project-title">SIG Thiès</div>
+            <div id="navbar">
+                <button class="nav-btn" onclick="location.reload()"><i class="fa fa-home"></i> Accueil</button>
+                <button class="nav-btn" onclick="toggleModal('aboutModal')"><i class="fa fa-info-circle"></i> A propos</button>
+                <button class="nav-btn" onclick="activateSpatialQuery()"><i class="fa fa-vector-square"></i> Requête Spatiale</button>
+                <button class="nav-btn" onclick="activateAttributeQuery()"><i class="fa fa-search"></i> Requête Attributaire</button>
+                <button class="nav-btn" onclick="downloadData()"><i class="fa fa-download"></i> Télécharger</button>
+                <button class="nav-btn" onclick="toggleMeasure()"><i class="fa fa-ruler"></i> Mesure</button>
+                <button class="nav-btn" onclick="window.print()"><i class="fa fa-print"></i> Imprimer</button>
+                <div id="geocoder-container"></div>
+            </div>
+        </header>
+        
+        <div id="content-wrapper">
+            <div id="left-panel" class="sidebar">
+                <div class="panel-header">
+                    <span class="panel-title">Catalogue des données</span>
+                </div>
+                <div id="left-panel-content" class="panel-content"></div>
+            </div>
+            
+            <div id="map">
+                <div id="popup" class="ol-popup">
+                    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                    <div id="popup-content"></div>
+                </div>
+            </div>
+            
+            <div id="right-panel" class="sidebar">
+                <div class="panel-header">
+                    <span class="panel-title">Fonds de carte & Légende</span>
+                </div>
+                <div id="right-panel-content" class="panel-content">
+                    <h4>Légende</h4>
+                    <div id="legend-content"></div>
+                    <hr>
+                    <h4>Fonds de carte</h4>
+                    <div id="basemaps-list"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <div class="footer-info">
+                <span>Coordonnées: <span id="mouse-position"></span></span>
+            </div>
+            <div class="footer-info">
+                <span>Echelle: </span><div id="scale-line"></div>
+            </div>
+        </footer>
+
+        <!-- Modals -->
+        <div id="aboutModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="toggleModal('aboutModal')">&times;</span>
+                <h2>A propos</h2>
+                <p>Bienvenue sur le Système d'Information Géographique (SIG) de la région de Thiès.</p>
+                <p>Cette plateforme interactive permet de visualiser, interroger et analyser les données géospatiales de la région. Elle offre un accès intuitif aux informations concernant les infrastructures, le réseau routier, l'hydrographie et les localités.</p>
+                <p>Fonctionnalités principales :</p>
+                <ul>
+                    <li>Consultation du catalogue des données.</li>
+                    <li>Visualisation sur différents fonds de carte (OSM, Satellite, Dark Matter).</li>
+                    <li>Requêtes spatiales et attributaires.</li>
+                    <li>Téléchargement de données.</li>
+                </ul>
+                <p>Développée pour faciliter la prise de décision et la gestion territoriale.</p>
+            </div>
+        </div>
+
+        <script src="resources/qgis2web_expressions.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="resources/horsey.min.js"></script>
+        <script src="resources/ol-search-layer.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+        <script src="layers/Departement_3.js"></script><script src="layers/Arrondissment_4.js"></script><script src="layers/Routes_5.js"></script><script src="layers/Hydrographie_6.js"></script><script src="layers/Localit_7.js"></script><script src="layers/Ecoles_8.js"></script>
+        <script src="styles/Departement_3_style.js"></script><script src="styles/Arrondissment_4_style.js"></script><script src="styles/Routes_5_style.js"></script><script src="styles/Hydrographie_6_style.js"></script><script src="styles/Localit_7_style.js"></script><script src="styles/Ecoles_8_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script> 
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+    </body>
+</html>
