@@ -29,12 +29,32 @@
         /* Main Layout */
         #content-wrapper { display: flex; flex-grow: 1; position: relative; overflow: hidden; }
         
-        .sidebar { width: 300px; background-color: #f8f9fa; border-right: 1px solid #ddd; border-left: 1px solid #ddd; display: flex; flex-direction: column; transition: margin 0.3s ease; flex-shrink: 0; z-index: 5; position: relative; }
-        #left-panel { border-right: 1px solid #ccc; border-left: none; }
-        #right-panel { border-left: 1px solid #ccc; border-right: none; }
+        /* Map takes full space */
+        #map { width: 100%; height: 100%; background-color: #eef2f3; flex-grow: 1; }
+
+        /* Floating Sidebars (Petites fenêtres) */
+        .sidebar { 
+            width: 260px; 
+            background-color: rgba(255, 255, 255, 0.95); 
+            border: 1px solid #ccc; 
+            display: flex; 
+            flex-direction: column; 
+            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s; 
+            z-index: 1000; 
+            position: absolute; 
+            top: 10px; 
+            max-height: 65vh; /* Hauteur limitée pour ne pas cacher toute la carte */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
         
-        .sidebar.collapsed { margin-left: -300px; }
-        #right-panel.collapsed { margin-right: -300px; }
+        #left-panel { left: 10px; transform: translateX(0); opacity: 1; visibility: visible; }
+        #right-panel { right: 10px; transform: translateX(0); opacity: 1; visibility: visible; }
+        
+        /* Hiding logic for Desktop */
+        #left-panel.collapsed { transform: translateX(-300px); opacity: 0; visibility: hidden; }
+        #right-panel.collapsed { transform: translateX(300px); opacity: 0; visibility: hidden; }
         
         .panel-header { padding: 10px 15px; background-color: #005a8d; color: white; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .panel-title { margin: 0; font-size: 1rem; }
@@ -42,7 +62,6 @@
         
         .panel-content { flex-grow: 1; overflow-y: auto; padding: 15px; }
         
-        #map { flex-grow: 1; position: relative; background-color: #eef2f3; }
         
         /* Footer */
         footer { background-color: #005a8d; color: white; height: 30px; display: flex; align-items: center; padding: 0 15px; font-size: 0.85rem; justify-content: space-between; flex-shrink: 0; z-index: 10; }
@@ -79,11 +98,19 @@
 
         /* Mobile Optimization */
         @media (max-width: 768px) {
-            .sidebar { position: absolute; height: 100%; z-index: 1000; box-shadow: 2px 0 5px rgba(0,0,0,0.3); }
-            #left-panel { left: 0; margin-left: -300px; }
-            #left-panel.visible { margin-left: 0; }
-            #right-panel { right: 0; margin-right: -300px; }
-            #right-panel.visible { margin-right: 0; }
+            .sidebar { 
+                width: 85%; 
+                max-width: 300px;
+                top: 10px;
+                max-height: 50vh; /* Encore plus petit sur mobile */
+            }
+            
+            /* Mobile: Hidden by default */
+            #left-panel { left: 10px; transform: translateX(-120%); opacity: 0; visibility: hidden; }
+            #left-panel.visible { transform: translateX(0); opacity: 1; visibility: visible; }
+            
+            #right-panel { right: 10px; transform: translateX(120%); opacity: 0; visibility: hidden; }
+            #right-panel.visible { transform: translateX(0); opacity: 1; visibility: visible; }
             
             /* Adjust header for mobile */
             header { padding: 0 10px; }
