@@ -218,6 +218,15 @@
             // PWA Install Prompt
             let deferredPrompt;
             const installBtn = document.getElementById('install-btn');
+            
+            // Détection iOS
+            const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+            const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
+
+            // Afficher le bouton sur iOS si l'app n'est pas déjà installée
+            if (isIos && !isInStandaloneMode) {
+                installBtn.style.display = 'inline-flex';
+            }
 
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
@@ -226,17 +235,20 @@
             });
 
             installBtn.addEventListener('click', (e) => {
-                installBtn.style.display = 'none';
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     deferredPrompt.userChoice.then((choiceResult) => {
                         if (choiceResult.outcome === 'accepted') {
                             console.log('User accepted the A2HS prompt');
+                            installBtn.style.display = 'none';
                         } else {
                             console.log('User dismissed the A2HS prompt');
                         }
                         deferredPrompt = null;
                     });
+                } else if (isIos) {
+                    // Instructions pour iOS
+                    alert("Pour installer l'application sur iOS :\n1. Appuyez sur le bouton de partage (icône carré avec une flèche).\n2. Faites défiler et sélectionnez 'Sur l'écran d'accueil'.");
                 }
             });
 
